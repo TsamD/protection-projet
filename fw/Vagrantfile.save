@@ -1,0 +1,34 @@
+# coding: utf-8
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.ssh.insert_key = false
+  config.vm.boot_timeout = 600
+
+  config.vm.network "public_network", bridge: "wlp0s20f3" # ou eth0
+  # IMPORTANT: on empêche Vagrant de configurer netplan (bug Vagrant 2.4.9)
+  config.vm.network "private_network", ip: "172.28.128.17", auto_config: false # MGMT
+  config.vm.network "private_network", ip: "172.28.2.254",   auto_config: false # Servers
+  config.vm.network "private_network", ip: "172.28.5.254",   auto_config: false # Staff
+  config.vm.network "private_network", ip: "172.28.3.254",   auto_config: false # Compta
+  config.vm.network "private_network", ip: "172.28.10.254",  auto_config: false # Tech
+  config.vm.network "private_network", ip: "172.28.100.254",  auto_config: false # Admin class
+#  config.vm.network "private_network", ip: "172.28.100.254", auto_config: false # Guest
+  config.vm.network "private_network", ip: "172.28.200.254", auto_config: false # DMZ
+
+  config.vm.provider "virtualbox" do |vb|
+    # MAC fixes pour matcher netplan (adapters 2..9)
+    vb.customize ["modifyvm", :id, "--macaddress2", "080027AA0011"]
+    vb.customize ["modifyvm", :id, "--macaddress3", "080027AA0022"]
+    vb.customize ["modifyvm", :id, "--macaddress4", "080027AA0033"]
+    vb.customize ["modifyvm", :id, "--macaddress5", "080027AA0044"]
+    vb.customize ["modifyvm", :id, "--macaddress6", "080027AA0055"]
+    vb.customize ["modifyvm", :id, "--macaddress7", "080027AA0066"]
+    vb.customize ["modifyvm", :id, "--macaddress8", "080027AA0077"]
+#    vb.customize ["modifyvm", :id, "--macaddress9", "080027AA0088"]
+  end
+
+  # Fichiers externes (comme le prof)
+  config.vm.provision "file", source: "./files/01-fw-netplan.yaml", destination: "/tmp/01-fw-netplan.yaml"
+  config.vm.provision "file", source: "./files/nftables.conf", destination: "/tmp/nftables.conf"
+  config.vm.provision "shell", path: "./provision.sh"
+end

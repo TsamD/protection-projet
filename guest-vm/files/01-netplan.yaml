@@ -1,0 +1,15 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    dmz:
+      match:
+        macaddress: "08:00:27:bb:11:10"
+      set-name: dmz
+      dhcp4: false
+      addresses: [ "172.28.200.15/24" ]
+      routes:
+        - to: default
+          via: 172.28.200.254
+      nameservers:
+        addresses: [8.8.8.8, 1.1.1.1]

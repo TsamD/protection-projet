@@ -1,0 +1,44 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    mgmt:
+      match: {macaddress: "08:00:27:aa:00:11"}
+      set-name: mgmt
+      dhcp4: false
+      addresses: [ "172.28.128.17/24" ]
+
+    vlan_servers:
+      match: {macaddress: "08:00:27:aa:00:22"}
+      set-name: vlan_servers
+      dhcp4: false
+      addresses: [ "172.28.2.254/24" ]
+
+    vlan_staff:
+      match: {macaddress: "08:00:27:aa:00:33"}
+      set-name: vlan_staff
+      dhcp4: false
+      addresses: [ "172.28.5.254/24" ]
+
+    vlan_compta:
+      match: {macaddress: "08:00:27:aa:00:44"}
+      set-name: vlan_compta
+      dhcp4: false
+      addresses: [ "172.28.3.254/24" ]
+
+    vlan_tech:
+      match: {macaddress: "08:00:27:aa:00:55"}
+      set-name: vlan_tech
+      dhcp4: false
+      addresses: [ "172.28.10.254/24" ]
+
+    vlan_admin:
+      match: {macaddress: "08:00:27:aa:00:66"}
+      set-name: vlan_admin
+      dhcp4: false
+      addresses: [ "172.28.100.254/24" ]
+    vlan_dmz:
+      match: {macaddress: "08:00:27:aa:00:77"}
+      set-name: vlan_dmz
+      dhcp4: false
+      addresses: [ "172.28.200.254/24" ]

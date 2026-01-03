@@ -1,0 +1,86 @@
+flush ruleset
+#######
+#####
+table ip nat {
+  chain prerouting {
+    type nat hook prerouting priority -100;
+
+    # Host -> FW -> Server-Web
+    iifname "enp0s3" tcp dport 80  dnat to 172.28.200.10:80
+    iifname "enp0s3" tcp dport 443 dnat to 172.28.200.10:443
+  }
+
+  chain postrouting {
+    type nat hook postrouting priority 100;
+    oifname "enp0s3" masquerade
+  }
+}
+######
+########
+table inet filter {
+  chain input {
+    type filter hook input priority 0;
+    policy drop;
+
+    # loopback + connexions établies
+    iif "lo" accept
+    ct state established,related accept
+
+    # --- SSH vers le FW ---
+    # Vagrant/VirtualBox NAT (source vue depuis la VM)
+    ip saddr 10.0.2.2 tcp dport 22 accept
+
+    # SSH depuis le réseau MGMT (host-only)
+    ip saddr 172.28.128.0/24 tcp dport 22 accept
+
+    # Ping depuis MGMT (pratique debug)
+    ip saddr 172.28.128.0/24 icmp type echo-request accept
+    ip saddr 10.0.2.2 icmp type echo-request accept
+#######
+#####
+# Internet (Vagrant NAT) -> DMZ : HTTP/HTTPS uniquement
+#	iifname "enp0s3" oifname "vlan_dmz" ip daddr 172.28.200.10 tcp dport {80,443} accept
+
+# Retour
+#	ct state established,related accept
+
+#####
+####### 
+
+ }
+
+  chain forward {
+    type filter hook forward priority 0;
+    policy drop;
+# WAN (Vagrant NAT) -> DMZ : HTTP/HTTPS vers server-web
+    iifname "enp0s3" oifname "vlan_dmz" ip daddr 172.28.200.10 tcp dport {80,443} accept
+
+    ct state established,related accept
+
+    # STAFF -> SERVERS
+    ip saddr 172.28.5.0/24 ip daddr 172.28.2.0/24 accept
+
+    # COMPTA -> SERVERS
+    ip saddr 172.28.3.0/24 ip daddr 172.28.2.0/24 accept
+
+    # CLASSE ADMIN -> SERVERS
+    ip saddr 172.28.100.0/24 ip daddr 172.28.2.0/24 accept
+
+    # CLASSE TECH -> pas d'interne
+    ip saddr 172.28.10.0/24 ip daddr 172.28.2.0/24 drop
+    ip saddr 172.28.10.0/24 ip daddr 172.28.3.0/24 drop
+    ip saddr 172.28.10.0/24 ip daddr 172.28.5.0/24 drop
+    ip saddr 172.28.10.0/24 ip daddr 172.28.100.0/24 drop
+    ip saddr 172.28.10.0/24 accept
+
+    # WIFI guest -> rien d'interne
+#    ip saddr 172.28.100.0/24 drop
+
+    # DMZ -> SERVERS interdit par défaut (rien à mettre ici si on veut tout bloquer)
+    ip saddr 172.28.200.0/24 ip daddr 172.28.2.0/24 drop
+    ip saddr 172.28.200.0/24 ip daddr 172.28.3.0/24 drop
+    ip saddr 172.28.200.0/24 ip daddr 172.28.5.0/24 drop
+    ip saddr 172.28.200.0/24 ip daddr 172.28.100.0/24 drop
+    ip saddr 172.28.200.0/24 accept
+  }
+}

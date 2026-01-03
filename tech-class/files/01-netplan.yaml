@@ -1,0 +1,15 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    tech:
+      match:
+        macaddress: "08:00:27:bb:00:10"
+      set-name: tech
+      dhcp4: false
+      addresses: [ "172.28.10.10/24" ]
+      routes:
+        - to: default
+          via: 172.28.10.254
+      nameservers:
+        addresses: [8.8.8.8, 1.1.1.1]

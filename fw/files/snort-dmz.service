@@ -1,0 +1,12 @@
+[Unit]
+Description=Snort IDS on DMZ
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/sbin/snort -i vlan_dmz -c /etc/snort/snort.conf -A fast
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

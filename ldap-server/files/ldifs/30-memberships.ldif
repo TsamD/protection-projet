@@ -1,0 +1,31 @@
+dn: cn=grp_admin,ou=Groups,dc=interface3,dc=be
+changetype: modify
+add: memberUid
+memberUid: admin
+memberUid: johan
+memberUid: fatima
+memberUid: ibtissam
+
+dn: cn=grp_compta,ou=Groups,dc=interface3,dc=be
+changetype: modify
+add: memberUid
+memberUid: saliha.compta
+memberUid: olivier.compta
+
+dn: cn=grp_staff,ou=Groups,dc=interface3,dc=be
+changetype: modify
+add: memberUid
+memberUid: julie.staff
+memberUid: sven.staff
+
+dn: cn=grp_class_desk,ou=Groups,dc=interface3,dc=be
+changetype: modify
+add: memberUid
+memberUid: elise.deskclass
+memberUid: stephanie.deskclass
+
+dn: cn=grp_class_tech,ou=Groups,dc=interface3,dc=be
+changetype: modify
+add: memberUid
+memberUid: nisrine.techclass
+memberUid: alessia.techclass

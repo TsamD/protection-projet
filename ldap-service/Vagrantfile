@@ -1,0 +1,15 @@
+# coding: utf-8
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.ssh.insert_key = false
+  config.vm.boot_timeout = 600
+  config.vm.hostname = "ldap-service"
+
+  config.vm.network "private_network", ip: "172.28.128.119", virtualbox__intnet: "servers"
+
+  config.vm.provision "file", source: "./files/install.txt", destination: "/home/vagrant/install.txt"
+  config.vm.provision "file", source: "./files/sssd.conf",  destination: "/home/vagrant/sssd.conf"
+  config.vm.provision "file", source: "./files/secrets/ubuntuadmin-pass.txt", destination: "/home/vagrant/ubuntuadmin-pass.txt"
+
+  config.vm.provision "shell", path: "./provision.sh"
+end

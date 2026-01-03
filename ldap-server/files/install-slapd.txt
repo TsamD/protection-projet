@@ -1,0 +1,6 @@
+slapd   slapd/password1 password Ephec.com
+slapd   slapd/password2 password Ephec.com
+slapd   shared/organization string interface3.be
+slapd   slapd/domain string interface3.be
+slapd   slapd/no_configuration boolean false
+slapd   slapd/move_old_database boolean true

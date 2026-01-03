@@ -1,0 +1,18 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "tech-class"
+  config.ssh.insert_key = false
+
+  # VLAN TECH uniquement
+  config.vm.network "private_network", ip: "172.28.10.10", virtualbox__intnet: "tech", auto_config: false
+  config.vm.provider "virtualbox" do |vb| 
+  vb.customize ["modifyvm", :id, "--macaddress2", "080027BB0010"] 
+  end
+
+
+  config.vm.provision "file",  source: "./files/01-netplan.yaml", destination: "/tmp/01-netplan.yaml"
+  config.vm.provision "file", source: "./files/password.txt", destination: "/tmp/password.txt"
+
+
+  config.vm.provision "shell", path: "./provision.sh"
+end

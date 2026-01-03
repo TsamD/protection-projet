@@ -1,0 +1,24 @@
+dn: cn=grp_admin,ou=Groups,dc=interface3,dc=be
+cn: grp_admin
+objectClass: posixGroup
+gidNumber: 10100
+
+dn: cn=grp_compta,ou=Groups,dc=interface3,dc=be
+cn: grp_compta
+objectClass: posixGroup
+gidNumber: 10101
+
+dn: cn=grp_staff,ou=Groups,dc=interface3,dc=be
+cn: grp_staff
+objectClass: posixGroup
+gidNumber: 10102
+
+dn: cn=grp_class_desk,ou=Groups,dc=interface3,dc=be
+cn: grp_class_desk
+objectClass: posixGroup
+gidNumber: 10103
+
+dn: cn=grp_class_tech,ou=Groups,dc=interface3,dc=be
+cn: grp_class_tech
+objectClass: posixGroup
+gidNumber: 10104

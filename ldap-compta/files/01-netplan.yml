@@ -1,0 +1,15 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s8:
+      dhcp4: no
+      addresses: [172.28.128.111/24]
+    enp0s9:
+      dhcp4: no
+      addresses: [172.28.3.10/24]
+      routes:
+        - to: default
+          via: 172.28.3.254
+          metric: 100
+

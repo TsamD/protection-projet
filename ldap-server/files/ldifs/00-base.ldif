@@ -1,0 +1,7 @@
+dn: ou=People,dc=interface3,dc=be
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Groups,dc=interface3,dc=be
+objectClass: organizationalUnit
+ou: Groups

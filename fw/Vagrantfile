@@ -1,0 +1,46 @@
+# coding: utf-8
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.ssh.insert_key = false
+  config.vm.boot_timeout = 600
+  config.vm.hostname = "fw"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 2048
+  end
+
+  config.vm.network "forwarded_port", guest: 80,  host: 8080
+  config.vm.network "forwarded_port", guest: 443, host: 8443
+
+  # IMPORTANT: on empêche Vagrant de configurer netplan (bug Vagrant 2.4.9)
+  config.vm.network "private_network", ip: "172.28.128.17", auto_config: false # MGMT
+  config.vm.network "private_network", ip: "172.28.2.254", virtualbox__intnet: "servers", auto_config: false
+  config.vm.network "private_network", ip: "172.28.5.254", virtualbox__intnet: "staff", auto_config: false
+  config.vm.network "private_network", ip: "172.28.3.254", virtualbox__intnet: "compta", auto_config: false
+  config.vm.network "private_network", ip: "172.28.10.254", virtualbox__intnet: "tech", auto_config: false
+  config.vm.network "private_network", ip: "172.28.100.254", virtualbox__intnet: "desk", auto_config: false
+  config.vm.network "private_network", ip: "172.28.200.254", virtualbox__intnet: "dmz", auto_config: false
+
+  config.vm.provider "virtualbox" do |vb|
+    # MAC fixes pour matcher netplan (adapters 2..9)
+    vb.customize ["modifyvm", :id, "--macaddress2", "080027AA0011"]
+    vb.customize ["modifyvm", :id, "--macaddress3", "080027AA0022"]
+    vb.customize ["modifyvm", :id, "--macaddress4", "080027AA0033"]
+    vb.customize ["modifyvm", :id, "--macaddress5", "080027AA0044"]
+    vb.customize ["modifyvm", :id, "--macaddress6", "080027AA0055"]
+    vb.customize ["modifyvm", :id, "--macaddress7", "080027AA0066"]
+    vb.customize ["modifyvm", :id, "--macaddress8", "080027AA0077"]
+  end
+
+  # Fichiers externes (comme le prof)
+  # netplan et nftables (dossier)
+  config.vm.provision "file", source: "./files/01-fw-netplan.yaml", destination: "/tmp/01-fw-netplan.yaml"
+  config.vm.provision "file", source: "./files/nftables.conf", destination: "/tmp/nftables.conf"
+  # Snort conf (dossier)
+  config.vm.provision "file", source: "./files/snort", destination: "/tmp/snort"
+
+  # Service systemd
+  config.vm.provision "file", source: "./files/snort-dmz.service", destination: "/tmp/snort-dmz.service"
+
+  config.vm.provision "shell", path: "./provision.sh"
+end
+

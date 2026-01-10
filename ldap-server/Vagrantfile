@@ -1,8 +1,9 @@
 # coding: utf-8
+
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/jammy64"
-  config.ssh.insert_key = false
-  config.vm.boot_timeout = 600
+  config.vm.provider :virtualbox
+
 #  config.vm.hostname = "ldap-server"
   # MGMT network (host-only)
   config.vm.network "private_network", ip: "172.28.128.110", auto_config: false
@@ -10,22 +11,138 @@ Vagrant.configure("2") do |config|
   # Interface Servers
   config.vm.network "private_network", ip: "172.28.2.10", virtualbox__intnet: "servers", auto_config: false
 
-config.vm.provider "virtualbox" do |vb|
+ config.vm.provider "virtualbox" do |vb|
     # MAC fixes pour matcher netplan (adapters 2..9)
     vb.customize ["modifyvm", :id, "--macaddress2", "080027FB0011"]
     vb.customize ["modifyvm", :id, "--macaddress3", "080027FB0022"]
   end
 
-
-
-  # External config files (prof-style)
   config.vm.provision "file", source: "./files/01-netplan.yaml", destination: "/tmp/01-netplan.yaml"
+
   config.vm.provision "file", source: "./files/install-krb5.txt", destination: "/home/vagrant/install-krb5.txt"
   config.vm.provision "file", source: "./files/install-slapd.txt", destination: "/home/vagrant/install-slapd.txt"
-  config.vm.provision "file", source: "./files/ldap.conf",         destination: "/home/vagrant/ldap.conf"
+  config.vm.provision "file", source: "./files/ldap.conf", destination: "/home/vagrant/ldap.conf"
+  config.vm.provision "file", source: "./files/ldap-pass.txt", destination: "/home/vagrant/ldap-pass.txt"
+  config.vm.provision "file", source: "./files/realm-pass.txt", destination: "/home/vagrant/realm-pass.txt"
+  config.vm.provision "file", source: "./files/ubuntu-pass.txt", destination: "/home/vagrant/ubuntu-pass.txt"
+  config.vm.provision "file", source: "./files/ubuntuadmin-pass.txt", destination: "/home/vagrant/ubuntuadmin-pass.txt"
+  config.vm.provision "file", source: "./files/ldifs", destination: "/home/vagrant/ldifs"
+  config.vm.provision "file", source: "./files/tech-pass.txt", destination: "/home/vagrant/tech-pass.txt"
+  config.vm.provision "file", source: "./files/desk-pass.txt", destination: "/home/vagrant/desk-pass.txt"
+  config.vm.provision "file", source: "./files/admin-pass.txt", destination: "/home/vagrant/admin-pass.txt"
+  config.vm.provision "file", source: "./files/compta-pass.txt", destination: "/home/vagrant/compta-pass.txt"
+  config.vm.provision "file", source: "./files/staff-pass.txt", destination: "/home/vagrant/staff-pass.txt"
+  config.vm.provision "shell", inline: <<-SHELL
+#!/bin/bash
+  set -euo pipefail
 
-  config.vm.provision "file", source: "./files/ldifs",   destination: "/home/vagrant/ldifs"
-  config.vm.provision "file", source: "./files/secrets", destination: "/home/vagrant/secrets"
+  # Idée générale: 
+  # https://documentation.ubuntu.com/server/how-to/openldap/install-openldap/
+  # https://documentation.ubuntu.com/server/how-to/kerberos/install-a-kerberos-server/
+  # https://documentation.ubuntu.com/server/how-to/sssd/with-ldap-and-kerberos
+  # Spécifiquement pour l'accès ssh: https://www.howtoforge.com/how-to-setup-kerberos-server-and-client-on-ubuntu-1804-lts/
 
-  config.vm.provision "shell", path: "./provision.sh"
+  # Mise à jour du fuseau horaire
+  timedatectl set-timezone Europe/Brussels
+  ### 2) Netplan 
+  install -o root -g root -m 0600 /tmp/01-netplan.yaml /etc/netplan/01-netplan.yaml
+
+  if [ -f /etc/netplan/50-vagrant.yaml ]; then
+    chown root:root /etc/netplan/50-vagrant.yaml
+    chmod 0600 /etc/netplan/50-vagrant.yaml
+  fi
+
+  netplan generate
+  netplan apply
+
+  # Changement hostname - Kerberos utilise les noms, pas les adresses!
+  hostnamectl set-hostname sso-server.interface3.be
+  echo -e "172.28.2.10 sso-server.interface3.be\n172.28.100.10 sso-desk.interface3.be\n172.28.5.10 sso-staff.interface3.be\n172.28.3.10 sso-compta.interface3.be\n172.28.2.11 sso-service.interface3.be\n172.28.2.12 sso-backup-server.interface3.be\n172.28.200.10 yuki.interface3.be" >> /etc/hosts
+
+  # Protection des configurations contenant les mots de passe et des mots de passe des utilisateurs
+  chmod 0600 ./install-krb5.txt
+  chmod 0600 ./install-slapd.txt
+  chmod 0600 ./ldap-pass.txt
+  chmod 0600 ./realm-pass.txt
+  chmod 0600 ./ubuntu-pass.txt
+  chmod 0600 ./ubuntuadmin-pass.txt
+  chmod 0600 ./tech-pass.txt
+  chmod 0600 ./desk-pass.txt
+  chmod 0600 ./staff-pass.txt
+  chmod 0600 ./admin-pass.txt
+  chmod 0600 ./compta-pass.txt
+  cat ./ubuntu-pass.txt ./ubuntu-pass.txt >> ubuntu-pass-create.txt
+  cat ./ubuntuadmin-pass.txt ./ubuntuadmin-pass.txt >> ubuntuadmin-pass-create.txt
+  cat ./tech-pass.txt ./tech-pass.txt >> tech-pass-create.txt
+  cat ./desk-pass.txt ./desk-pass.txt >> desk-pass-create.txt
+  cat ./staff-pass.txt ./staff-pass.txt >> staff-pass-create.txt
+  cat ./admin-pass.txt ./admin-pass.txt >> admin-pass-create.txt
+  cat ./compta-pass.txt ./compta-pass.txt >> compta-pass-create.txt
+  chmod 0600 ./ubuntu-pass-create.txt
+  chmod 0600 ./ubuntuadmin-pass-create.txt
+  chmod 0600 ./tech-pass-create.txt
+  chmod 0600 ./desk-pass-create.txt
+  chmod 0600 ./staff-pass-create.txt
+  chmod 0600 ./admin-pass-create.txt 
+  chmod 0600 ./compta-pass-create.txt
+  # Mettre à jour les packages
+  DEBIAN_FRONTEND=noninteractive apt-get update
+
+  # Charger debconf-utils et donner les paramètres par défaut utilisés par slapd et krb5-user (en fait krb5-config)
+  # voir https://serverfault.com/questions/407317/passing-default-answers-to-apt-get-package-install-questions
+  DEBIAN_FRONTEND=noninteractive apt-get -qq -y install debconf-utils
+  debconf-set-selections < install-krb5.txt
+  debconf-set-selections < install-slapd.txt
+
+  # Charger et installer les packages ldap
+  DEBIAN_FRONTEND=noninteractive apt-get -qq -y install slapd ldap-utils
+
+  # Définition des défauts pour LDAP
+  cat ldap.conf >> /etc/ldap/ldap.conf 
+
+  # Charger et installer les packages kerberos
+  DEBIAN_FRONTEND=noninteractive apt-get -qq -y install krb5-kdc krb5-admin-server
+
+  # Création nouveau realm  
+  krb5_newrealm < realm-pass.txt
+
+  # Creation des premiers principaux
+  # https://web.mit.edu/Kerberos/krb5-1.5/krb5-1.5.4/doc/krb5-admin/Adding-or-Modifying-Principals.html
+  kadmin.local -q "addprinc ubuntu" < ubuntu-pass-create.txt
+  kadmin.local -q "addprinc ubuntu/admin" < ubuntuadmin-pass-create.txt
+ 
+  # Donner des droits aux admin du realm
+  echo "*/admin@INTERFACE3.BE        *" >> /etc/krb5kdc/kadm5.acl
+  systemctl restart krb5-admin-server.service
+
+  # Enregister l'host dans Kerberos - nécessaire pour y accéder via ssh
+  # voir https://documentation.ubuntu.com/server/how-to/sssd/with-ldap-and-kerberos/#sssd-and-kdc-spoofing
+  kadmin -p ubuntu/admin -q "addprinc -randkey host/sso-server.interface3.be" < ubuntuadmin-pass.txt
+  kadmin -p ubuntu/admin -q "ktadd -k /etc/krb5.keytab host/sso-server.interface3.be" < ubuntuadmin-pass.txt
+
+  # Configurer sshd pour l'authentification via Kerberos
+  echo "GSSAPIAuthentication yes" | tee /etc/ssh/sshd_config.d/50-allow-GSSAPI-authentication.conf
+  echo "GSSAPICleanupCredentials yes" | tee -a /etc/ssh/sshd_config.d/50-allow-GSSAPI-authentication.conf
+  systemctl restart sshd
+
+  # Création d'un utilisateur dans LDAP et dans Kerberos
+  # Attention le mot de passe ne doit pas contenir de newline
+  # https://serverfault.com/questions/140728/ldapsearch-password-file-format
+  # Il y a moyen d'unifier la configuration de LDAP et de Kerberos
+  ldapadd -x -D cn=admin,dc=interface3,dc=be -f ldifs/add_meta.ldif -y ldap-pass.txt
+  ldapadd -x -D cn=admin,dc=interface3,dc=be -f ldifs/add_users.ldif -y ldap-pass.txt
+  ldapadd -x -D cn=admin,dc=interface3,dc=be -f ldifs/add_groups.ldif -y ldap-pass.txt
+  ldapmodify -x -D cn=admin,dc=interface3,dc=be -f ldifs/modify_groups_with_users.ldif -y ldap-pass.txt
+  kadmin.local -q "addprinc alessia.techclass" < tech-pass-create.txt
+  kadmin.local -q "addprinc nissrine.techclass" < tech-pass-create.txt
+  kadmin.local -q "addprinc elise.deskclass" < desk-pass-create.txt
+  kadmin.local -q "addprinc stephanie.deskclass" < desk-pass-create.txt
+  kadmin.local -q "addprinc johan" < admin-pass-create.txt
+  kadmin.local -q "addprinc fatima" < admin-pass-create.txt
+  kadmin.local -q "addprinc ibtissam" < admin-pass-create.txt
+  kadmin.local -q "addprinc saliha.compta" < compta-pass-create.txt
+  kadmin.local -q "addprinc olivier.compta" < compta-pass-create.txt
+  kadmin.local -q "addprinc sven.staff" < staff-pass-create.txt
+  kadmin.local -q "addprinc julie.staff" < staff-pass-create.txt
+  SHELL
 end

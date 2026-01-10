@@ -1,0 +1,17 @@
+# Enable ruleset
+-e 1
+## Limit the rate to 120 audit entries per second
+-r 120
+
+## Monitor /home/users/personnel.txt
+-w /home/stephanie.deskclass/personnel.txt -p rwxa -k personnel-stephanie.deskclass
+-w /home/elise.deskclass/personnel.txt -p rwxa -k personnel-elise.deskclass 
+-w /home/nisrine.techclass/personnel.txt -p rwxa -k personnel-nisrine.techclass 
+-w /home/alessia.techclass/personnel.txt -p rwxa -k personnel-alessia.techclass
+-w /home/sven.staff/personnel.txt -p rwxa -k personnel-sven.staff
+-w /home/julie.staff/personnel.txt -p rwxa -k personnel-julie.staff
+-w /home/saliha.compta/personnel.txt -p rwxa -k personnel-saliha.compta
+-w /home/olivier.compta/personnel.txt -p rwxa -k personnel-olivier.compta
+-w /home/johan/personnel.txt -p rwxa -k personnel-johan
+-w /home/fatima/personnel.txt -p rwxa -k personnel-fatima
+-w /home/ibtissam/personnel.txt -p rwxa -k personnel-ibtissam

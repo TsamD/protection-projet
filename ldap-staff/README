@@ -1,0 +1,24 @@
+
+Dans chaque vm pour pouvoir se connecter en ssh sur les autre clients 
+ssh-keygen -t ed25519 -C "vagrant@sso-server"
+cat ~/.ssh/id_ed25519.pub
+
+
+ssh pour les admins
+ibtissam@sso-staff:~$ mkdir -p ~/.ssh
+ibtissam@sso-staff:~$ chmod 700 ~/.ssh
+ibtissam@sso-staff:~$ echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILT7FjcXbm+enmEJHRKSq39We8oAxuJpZ3OE//QHP2bJ vagrant@sso-server' >> ~/.ssh/authorized_keys
+ibtissam@sso-staff:~$ chmod 600 ~/.ssh/authorized_keys
+ibtissam@sso-staff:~$ ssh ibtissam@sso-staff.interface3.be
+The authenticity of host 'sso-staff.interface3.be (172.28.5.10)' can't be established.
+ED25519 key fingerprint is SHA256:8RNV/hkXNZ8LZ1t7gV9/dbYL86o/Njh8dhncmTCC6yg.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'sso-staff.interface3.be' (ED25519) to the list of known hosts.
+ibtissam@sso-staff.interface3.be: Permission denied (publickey).
+
+
+sudo apt install libpam-google-authenticator
+
+google-authenticator
+

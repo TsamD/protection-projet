@@ -1,0 +1,18 @@
+dn: uid=user1,ou=People,dc=hs,dc=be
+uid: user1
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: User1 Smith
+sn: Smith
+givenName: User1
+mail: user1@hs.be
+uidNumber: 10002
+gidNumber: 10002
+loginShell: /bin/bash
+homeDirectory: /home/user1
+
+dn: cn=user1,ou=Groups,dc=hs,dc=be
+cn: user1
+objectClass: posixGroup
+gidNumber: 10002
+memberUid: user1

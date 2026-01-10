@@ -1,0 +1,42 @@
+# coding: utf-8
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+ config.vm.network "private_network", ip: "172.28.128.121", auto_config: false
+  config.vm.network "private_network", ip: "172.28.2.12", virtualbox__intnet: "servers", auto_config: false
+ config.vm.provider "virtualbox" do |vb|
+  vb.customize ["modifyvm", :id, "--macaddress2", "080027BC1122"]
+  vb.customize ["modifyvm", :id, "--macaddress3", "080054AC1122"]
+ end
+  config.vm.provision "file", source: "./01-netplan.yaml", destination: "/tmp/01-netplan.yaml"
+
+  config.vm.provision "file", source: "./faire-sauvegarde.sh", destination: "/home/vagrant/faire-sauvegarde.sh"
+  
+  config.vm.provision "shell", inline: <<-SHELL
+#!/bin/bash
+  set -euo pipefail
+
+  # Mise à jour du fuseau horaire - important pour les certificats
+  timedatectl set-timezone Europe/Brussels
+
+ # Changement hostname - Kerberos utilise les noms, pas les adresses!
+  hostnamectl set-hostname sso-backup-server.interface3.be
+  echo -e "172.28.2.10 sso-server.interface3.be\n172.28.100.10 sso-desk.interface3.be\n172.28.5.10 sso-staff.interface3.be\n172.28.3.10 sso-compta.interface3.be\n172.28.2.11 sso-service.interface3.be\n172.28.2.12 sso-backup-server.interface3.be"
+
+  install -m 0644 /tmp/01-netplan.yaml /etc/netplan/01-netplan.yaml
+  # netplan: installer et verrouiller les permissions
+  install -o root -g root -m 0600 /tmp/01-netplan.yaml /etc/netplan/01-netplan.yaml
+
+  # Si Vagrant a généré un /etc/netplan/50-vagrant.yaml, on verrouille aussi
+  if [ -f /etc/netplan/50-vagrant.yaml ]; then
+    chown root:root /etc/netplan/50-vagrant.yaml
+    chmod 0600 /etc/netplan/50-vagrant.yaml
+  fi
+
+  netplan generate
+  netplan apply
+  # Rendre script exécutable
+  chmod +x faire-sauvegarde.sh
+  SHELL
+
+end

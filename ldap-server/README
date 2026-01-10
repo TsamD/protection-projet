@@ -1,0 +1,140 @@
+
+# README – Réparation manuelle LDAP / Kerberos (ldap-server)
+
+> Ce README permet de **réparer un serveur LDAP + Kerberos déjà installé** lorsque le provisionnement Vagrant échoue partiellement (erreurs `Invalid credentials (49)` / `kadmin interface`).
+
+
+## 1. Connexion
+
+
+vagrant ssh
+
+
+
+
+## 2. Vérifier que les services tournent
+
+
+systemctl status slapd --no-pager
+systemctl status krb5-kdc krb5-admin-server --no-pager
+
+
+
+
+## 3. Réparer le mot de passe admin LDAP
+
+### 3.1 Forcer le mot de passe admin LDAP à correspondre à `ldap-pass.txt`
+
+
+PASS="$(tr -d '\r\n' < /home/vagrant/ldap-pass.txt)"
+HASH="$(slappasswd -s "$PASS")"
+
+sudo ldapmodify -Q -Y EXTERNAL -H ldapi:/// <<EOF
+dn: olcDatabase={1}mdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: $HASH
+EOF
+
+
+### 3.2 Vérification
+
+ldapwhoami -x -H ldap://localhost \
+  -D "cn=admin,dc=interface3,dc=be" \
+  -y /home/vagrant/ldap-pass.txt
+
+
+ Résultat attendu :
+
+
+dn:cn=admin,dc=interface3,dc=be
+
+
+
+## 4. (Re)injecter les données LDAP
+
+
+ldapadd -x -H ldap://localhost \
+  -D "cn=admin,dc=interface3,dc=be" \
+  -y /home/vagrant/ldap-pass.txt \
+  -f /home/vagrant/ldifs/add_meta.ldif
+
+ldapadd -x -H ldap://localhost \
+  -D "cn=admin,dc=interface3,dc=be" \
+  -y /home/vagrant/ldap-pass.txt \
+  -f /home/vagrant/ldifs/add_users.ldif
+
+ldapadd -x -H ldap://localhost \
+  -D "cn=admin,dc=interface3,dc=be" \
+  -y /home/vagrant/ldap-pass.txt \
+  -f /home/vagrant/ldifs/add_groups.ldif
+
+ldapmodify -x -H ldap://localhost \
+  -D "cn=admin,dc=interface3,dc=be" \
+  -y /home/vagrant/ldap-pass.txt \
+  -f /home/vagrant/ldifs/modify_groups_with_users.ldif
+
+
+
+
+## 5. Vérifications LDAP
+
+
+ldapsearch -x -H ldap://localhost -b "dc=interface3,dc=be" dn
+ldapsearch -x -H ldap://localhost -b "ou=People,dc=interface3,dc=be" uid
+ldapsearch -x -H ldap://localhost -b "ou=Groups,dc=interface3,dc=be" cn
+
+
+
+
+## 6. Réparer Kerberos (si `kinit` échoue)
+
+### 6.1 Forcer le mot de passe `ubuntu/admin`
+
+
+ADMINPASS="$(tr -d '\r\n' < /home/vagrant/ubuntuadmin-pass.txt)"
+sudo kadmin.local -q "cpw -pw $ADMINPASS ubuntu/admin"
+
+
+### 6.2 Vérification
+
+
+kinit ubuntu/admin
+klist
+
+
+ Résultat attendu :
+
+* ticket `krbtgt/INTERFACE3.BE`
+* pas d’erreur
+
+
+## 7. Vérifier les principals Kerberos
+
+
+sudo kadmin.local -q "listprincs"
+
+
+
+
+## 8. État final attendu
+
+* LDAP :
+
+  * `dc=interface3,dc=be`
+  * `ou=People`
+  * `ou=Groups`
+  * utilisateurs et groupes visibles
+* Kerberos :
+
+  * `ubuntu`
+  * `ubuntu/admin`
+  * `kinit ubuntu/admin` fonctionnel
+
+## Notes importantes
+
+* Le message **“kadmin: Communication failure with server while initializing kadmin interface”** apparaît quand le mot de passe Kerberos ne correspond plus à celui utilisé par le script.
+* Aucun problème de réseau.
+* Aucun problème de LDIF.
+* Le serveur est **réparable sans reprovisionnement**.
+

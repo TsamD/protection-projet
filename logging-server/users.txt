@@ -1,0 +1,11 @@
+stephanie.deskclass:stephanie.deskclass
+elise.deskclass:elise.deskclass
+nisrine.techclass:nisrine.techclass
+alessia.techclass:alessia.techclass
+sven.staff:sven.staff
+julie.staff:julie.staff
+saliha.compta:saliha.compta
+olivier.compta:olivier.compta
+johan:johan
+fatima:fatima
+ibtissam:ibtissam

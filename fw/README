@@ -1,0 +1,11 @@
+regle pour activer le net 
+sudo nft insert rule inet filter forward ip saddr { 172.28.5.0/24, 172.28.100.0/24 } oifname "enp0s3" accept
+
+
+sudo nft add rule inet filter forward ip saddr 172.28.100.0/24 oifname "enp0s3" accept
+sudo nft add rule inet filter forward ip saddr 172.28.5.0/24   oifname "enp0s3" accept
+
+
+
+pour nettoyer 
+sudo systemctl restart nftables

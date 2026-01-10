@@ -1,0 +1,21 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+     mgmt:
+      match: {macaddress: "08:00:27:bc:11:33"}
+      set-name: mgmt
+      dhcp4: false
+      addresses: [ "172.28.128.123/24" ]
+
+     vlan_servers:
+      match: {macaddress: "08:00:54:ac:11:33"}
+      set-name: vlan_servers
+      dhcp4: false
+      addresses: [ "172.28.2.13/24" ]
+      routes:
+        - to: default
+          via: 172.28.2.254
+      nameservers:
+        addresses: [8.8.8.8, 1.1.1.1]
+

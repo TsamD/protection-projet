@@ -9,3 +9,7 @@ sudo nft add rule inet filter forward ip saddr 172.28.5.0/24   oifname "enp0s3" 
 
 pour nettoyer 
 sudo systemctl restart nftables
+
+
+Pour voir les regles nftables:
+sudo nft -j list reuleset

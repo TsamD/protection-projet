@@ -1,5 +1,10 @@
 LDAP-service est une vm qui sert de test ldap sans les contraintes vlans
 
-dependances 
+#dependances 
 
 ldap server 
+
+
+#DEBUG
+sudo ip route replace default via 172.28.2.254 dev enp0sXX
+

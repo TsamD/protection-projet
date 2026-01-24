@@ -1,4 +1,4 @@
-regle pour activer le net 
+##regle pour activer le net 
 sudo nft insert rule inet filter forward ip saddr { 172.28.5.0/24, 172.28.100.0/24 } oifname "enp0s3" accept
 
 
@@ -7,15 +7,17 @@ sudo nft add rule inet filter forward ip saddr 172.28.5.0/24   oifname "enp0s3" 
 
 
 
-pour nettoyer 
+##pour nettoyer 
 sudo systemctl restart nftables
 
 
-Pour voir les regles nftables:
+##Pour voir les regles nftables:
 sudo nft  list reuleset
 
 
-SNORT COMMAND
+
+
+###SNORT COMMAND
 
 
 systemctl status snort 
@@ -26,6 +28,7 @@ systemctl stop snort
 
 logs directs
 Pour suivre les logs en direct (comme un stream) : 
+sudo tail -f /var/log/snort/alert
 
 logs 
 sudo less /var/log/snort/alert 
@@ -42,3 +45,7 @@ Dossier principal : /var/log/snort/
 
 Fichier de configuration : /etc/snort/snort.conf (vérifiez ce fichier pour voir où output est dirigé si les commandes ci-dessus ne fonctionnent pas). 
  
+
+
+
+

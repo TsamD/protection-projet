@@ -2,3 +2,8 @@ Machine qui simule un laptop de staff externe (par exemple) connectée sur le wi
 
 Dependance 
 FW
+
+
+#DEBUG#
+sudo ip route replace default via 172.28.200.254 dev enp0sXX
+

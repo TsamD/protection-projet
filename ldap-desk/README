@@ -1,11 +1,13 @@
 LDAP-DESK 
 
-Dependances 
+#Dependances 
 
 FW
 ldap-server (users ldap)
 logging-server (monitoring )
 
+#DEBUG
+sudo ip route replace default via 172.28.100.254 dev enp0sXX
 
 COMMANDES
 

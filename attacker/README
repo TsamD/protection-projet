@@ -17,7 +17,7 @@ Cette approche privilégie la réalité du scénario d’attaque plutôt que l�
 
 
 
-Correspondance MAC / VLAN / Adressage
+#Correspondance MAC / VLAN / Adressage
 Adresse MAC complète	VLAN	    Réseau	IP attacker	Passerelle
 08:00:48:aa:00:11	staff	172.28.5.0/24	172.28.5.25	172.28.5.254
 08:00:48:aa:00:22	tech	172.28.10.0/24	172.28.10.25	172.28.10.254
@@ -27,12 +27,54 @@ Adresse MAC complète	VLAN	    Réseau	IP attacker	Passerelle
 
 sur l'attaquant on Identifie l’interface associée à la  MAC avec la commande ip -br link
 
-Pour activer le VLAN souhaité (ex mac 08:00:48:aa:00:22 a pour  interface enp0s9 , on prend son ip voir tableau des correspondances )
+#Pour activer le VLAN souhaité (ex mac 08:00:48:aa:00:22 a pour  interface enp0s9 , on prend son ip voir tableau des correspondances )
 sudo ip link set enp0s9 up
 sudo ip addr add 172.28.10.25/24 dev enp0s9
 sudo ip route replace default via 172.28.10.254 dev enp0s9
 
-pour Désactiver le VLAN 
+#pour Désactiver le VLAN 
 sudo ip addr flush dev enp0s9
 sudo ip link set enp0s9 down
 
+##############ATTAQUES########## 
+attention doit être sur le vlan techclass pour pouvoir simuler attaque laterale qui passe par le fw (snort n'est pas un nids, il ne verra pas une attaque laterale de quelqu'un sur la dmz) 
+d'où l'intéret d'un suricata ou zeek (amélioration future)
+
+#light
+
+sudo nmap -sS -Pn -T4 172.28.200.10
+
+#plus agressif
+sudo nmap -sS -sV -O -Pn -T4 --script vuln 172.28.200.10
+
+#faire crier snort
+sudo nmap -sS -sV -Pn -T4 -p 22,80,443 --script http-enum,http-methods,http-headers 172.28.200.10
+
+
+#attaque de l'host####
+
+nmap -sS -Pn -p 8443 --script ssl-enum-ciphers,ssl-cert -T4 yuki.interface3.be
+
+############explication############@
+
+-sS → scan SYN (furtif, typique attaquant)
+
+-sV → fingerprint services
+
+-O → détection OS
+
+--script vuln → déclenche plein de règles Snort
+
+-Pn → ignore ICMP (attaque “sérieuse”)
+
+#####Ce que Snort VA détecter#####
+
+Dans tes règles actives, tu as :
+
+emerging-scan.rules
+
+web-attacks.rules
+
+community-web-attacks.rules
+
+policy.rules

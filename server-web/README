@@ -1,8 +1,10 @@
 Server-web contient site web sécurisé , labo etudiantes
 
-dependance 
+#dependance 
 
 fw
 
+#DEBUG
+sudo ip route replace default via 172.28.200.254 dev enp0s9XX
 
 

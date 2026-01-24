@@ -1,6 +1,8 @@
 LDAP — COMPTA :
 
-Dependance
+#DEBUG
+sudo ip route replace default via 172.28.3.254 dev enp0sXX
+#Dependance
 
 Fw
 ldap-server (pour users ldap)

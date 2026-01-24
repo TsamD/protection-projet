@@ -1,10 +1,12 @@
 LDA server , serveur de gestion d'identités utilisateurs
 
 
-Dependances
+#Dependances
 
 pas de dependances saus fw pour mise à jour du système
 
+#DEBUG
+sudo ip route replace default via 172.28.2.254 dev enp0sXX
 
 
 

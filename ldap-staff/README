@@ -1,11 +1,15 @@
 ldap-staff vm pour staff
 
-dependance 
+#dependance 
 Fw
 ldap-server (authentification)
 
 
-Acces ldap
+#DEBUG
+sudo ip route replace default via 172.28.5.254 dev enp0sXX
+
+
+#Acces ldap
 
 autorisés : grp_staff , grp_admin  et grp_compta
 

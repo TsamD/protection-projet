@@ -1,6 +1,10 @@
 console monitoring 
 
-Dependances
+#DEBUG
+
+sudo ip route replace default via 172.28.2.254 dev enp0sXX
+
+#Dependances
 
 FW
 ldap-desk (source monitorée)

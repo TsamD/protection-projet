@@ -13,11 +13,29 @@ sudo ip route replace default via 172.28.5.254 dev enp0sXX
 
 autorisés : grp_staff , grp_admin  et grp_compta
 
-backup sur borgase.com pour les documents de  sven.staff et stephanie.staff 
+#backup sur borgase.com pour les documents de  sven.staff et stephanie.staff 
+#Vérification du service Borgmatic
+Borgmatic –version
 
+#verification automatisation (pas de create permet backup propre avec prune , archivage , etc.., PAS  de key sinon risque) 
+crontab -l
 
+#Vérification de la profondeur (Rétention)
+cat .config/borgmatic/config.yaml
 
------Example commandes pour SSH----
+#Lancement manuel du backup argument create pour fast backup  
+/home/julie.staff/.local/bin/borgmatic create --verbosity 1 --stats
+
+#Test de restauration (CRITIQUE)
+#liste les backups
+Borgmatic list
+#et on extract attention NE JAMAIS RESTAURER dans le même dossier ! 
+/home/julie.staff/.local/bin/borgmatic extract --archive latest
+
+#Verification 
+ls -R
+
+#-----Example commandes pour SSH----
 Dans chaque vm pour pouvoir se connecter en ssh sur les autre clients 
 ssh-keygen -t ed25519 -C "vagrant@sso-server"
 cat ~/.ssh/id_ed25519.pub

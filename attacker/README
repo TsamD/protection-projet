@@ -69,7 +69,7 @@ nmap -sS -Pn -p 8443 --script ssl-enum-ciphers,ssl-cert -T4 yuki.interface3.be
 
 #####Ce que Snort VA détecter#####
 
-Dans tes règles actives, tu as :
+Dans les règles actives, on a :
 
 emerging-scan.rules
 
